@@ -137,25 +137,25 @@ previous_pos = [0, 0, 0];
     mouse_diff = current_pos - previous_pos;
     mouse_diffX = mouse_diff(1);
     mouse_diffY = mouse_diff(2);
-    camvec = src.Children.CameraPosition - src.Children.CameraTarget;
+    camvec = ax.CameraPosition - ax.CameraTarget;
     if shift_down
         forwardvec = camvec .* [1,1,0];
         forwardvec = forwardvec / norm(forwardvec);
         rightvec = cross(camvec, [0, 0, 1]);
         forwarddiff = 0.003 * mouse_diffY * forwardvec;
         rightdiff = 0.001 * mouse_diffX * rightvec;
-        src.Children.CameraTarget = src.Children.CameraTarget + forwarddiff + rightdiff;
-        src.Children.CameraPosition = src.Children.CameraPosition + forwarddiff + rightdiff;
+        ax.CameraTarget = ax.CameraTarget + forwarddiff + rightdiff;
+        ax.CameraPosition = ax.CameraPosition + forwarddiff + rightdiff;
     else
-        src.Children.CameraPosition = (angle2dcm(0, 0, 0.006*mouse_diffX, 'xyz') * camvec')' + src.Children.CameraTarget;
-        camvec = src.Children.CameraPosition - src.Children.CameraTarget;
+        ax.CameraPosition = (angle2dcm(0, 0, 0.006*mouse_diffX, 'xyz') * camvec')' + ax.CameraTarget;
+        camvec = ax.CameraPosition - ax.CameraTarget;
         sidevec = cross([0,0,1], camvec);
         if mouse_diffY > 0 || dot(camvec, camvec) - camvec(3)^2 > 0.2 % Avoid getting in gimbal lock range.
             twirl_rot = axang2rotm([sidevec, mouse_diffY * 0.003]);
-            src.Children.CameraPosition = (twirl_rot * camvec')' + src.Children.CameraTarget;
+            ax.CameraPosition = (twirl_rot * camvec')' + ax.CameraTarget;
         end
-        if src.Children.CameraPosition(3) < 0.1
-            src.Children.CameraPosition(3) = 0.1;
+        if ax.CameraPosition(3) < 0.1
+            ax.CameraPosition(3) = 0.1;
         end
     end
     previous_pos = current_pos;
@@ -182,15 +182,15 @@ previous_pos = [0, 0, 0];
 
     delta = 0.25; % Multiplier for zooming. Hand-tuned.
 
-    curr_cam_pos = src.Children.CameraPosition;
-    curr_cam_tar = src.Children.CameraTarget;
+    curr_cam_pos = ax.CameraPosition;
+    curr_cam_tar = ax.CameraTarget;
 
     cam_vec = curr_cam_tar - curr_cam_pos;
 
     if dat.VerticalScrollCount > 0 % Zoom out
-        src.Children.CameraPosition = curr_cam_pos - cam_vec/norm(cam_vec)*delta;
+        ax.CameraPosition = curr_cam_pos - cam_vec/norm(cam_vec)*delta;
     elseif dat.VerticalScrollCount < 0 && dot(cam_vec, cam_vec) > 1 % Zoom in, but only if we aren't too close to the target.
-        src.Children.CameraPosition = curr_cam_pos + cam_vec/norm(cam_vec)*delta;
+        ax.CameraPosition = curr_cam_pos + cam_vec/norm(cam_vec)*delta;
     end
     end
 
@@ -216,8 +216,8 @@ previous_pos = [0, 0, 0];
     turn_delta = 0.25; % Multiplier for tilting.
     trans_delta = 0.1; % Multiplier for panning.
 
-    curr_cam_pos = src.Children.CameraPosition;
-    curr_cam_tar = src.Children.CameraTarget;
+    curr_cam_pos = ax.CameraPosition;
+    curr_cam_tar = ax.CameraTarget;
     cam_vec = curr_cam_tar - curr_cam_pos;
     cam_up = cross(cross(cam_vec, [0, 0, 1]), cam_vec);
 
@@ -227,20 +227,20 @@ previous_pos = [0, 0, 0];
             if shift_down % Pan forwards.
                 forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
                 forward_vec = forward_vec/norm(forward_vec);
-                src.Children.CameraPosition = curr_cam_pos + trans_delta * forward_vec;
-                src.Children.CameraTarget = curr_cam_tar + trans_delta * forward_vec;
+                ax.CameraPosition = curr_cam_pos + trans_delta * forward_vec;
+                ax.CameraTarget = curr_cam_tar + trans_delta * forward_vec;
             else % Tilt upwards.
-                src.Children.CameraPosition = curr_cam_pos + cam_up/(norm(cam_up) + eps) * turn_delta;
+                ax.CameraPosition = curr_cam_pos + cam_up/(norm(cam_up) + eps) * turn_delta;
             end
         case 'downarrow'
             if shift_down % Pan backwards.
                 forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
                 forward_vec = forward_vec/norm(forward_vec);
-                src.Children.CameraPosition = curr_cam_pos - trans_delta * forward_vec;
-                src.Children.CameraTarget = curr_cam_tar - trans_delta * forward_vec;
+                ax.CameraPosition = curr_cam_pos - trans_delta * forward_vec;
+                ax.CameraTarget = curr_cam_tar - trans_delta * forward_vec;
             else % Tilt downwards.
                 if curr_cam_pos(3) > 0.2 % No ground-penetrating cameras
-                    src.Children.CameraPosition = curr_cam_pos - cam_up/(norm(cam_up) + eps) * turn_delta;
+                    ax.CameraPosition = curr_cam_pos - cam_up/(norm(cam_up) + eps) * turn_delta;
                 end
             end
         case 'rightarrow'
@@ -248,22 +248,22 @@ previous_pos = [0, 0, 0];
                 forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
                 forward_vec = forward_vec/norm(forward_vec);
                 right_vec = cross(forward_vec, [0, 0, 1]);
-                src.Children.CameraPosition = curr_cam_pos + trans_delta * right_vec;
-                src.Children.CameraTarget = curr_cam_tar + trans_delta * right_vec;
+                ax.CameraPosition = curr_cam_pos + trans_delta * right_vec;
+                ax.CameraTarget = curr_cam_tar + trans_delta * right_vec;
             else % Tilt right.
                 cam_r = cross(cam_vec, cam_up);
-                src.Children.CameraPosition = curr_cam_pos + cam_r/(norm(cam_r) + eps) * turn_delta;
+                ax.CameraPosition = curr_cam_pos + cam_r/(norm(cam_r) + eps) * turn_delta;
             end
         case 'leftarrow'
             if shift_down % Pan left.
                 forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
                 forward_vec = forward_vec/norm(forward_vec);
                 right_vec = cross(forward_vec, [0, 0, 1]);
-                src.Children.CameraPosition = curr_cam_pos - trans_delta * right_vec;
-                src.Children.CameraTarget = curr_cam_tar - trans_delta * right_vec;
+                ax.CameraPosition = curr_cam_pos - trans_delta * right_vec;
+                ax.CameraTarget = curr_cam_tar - trans_delta * right_vec;
             else % Tilt left.
                 cam_r = cross(cam_vec, cam_up);
-                src.Children.CameraPosition = curr_cam_pos - cam_r/(norm(cam_r) + eps) * turn_delta;
+                ax.CameraPosition = curr_cam_pos - cam_r/(norm(cam_r) + eps) * turn_delta;
             end
         otherwise
             % Other events maybe added in the future.
