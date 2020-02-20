@@ -147,7 +147,10 @@ previous_pos = [0, 0, 0];
         ax.CameraTarget = ax.CameraTarget + forwarddiff + rightdiff;
         ax.CameraPosition = ax.CameraPosition + forwarddiff + rightdiff;
     else
-        ax.CameraPosition = (angle2dcm(0, 0, 0.006*mouse_diffX, 'xyz') * camvec')' + ax.CameraTarget;
+        angle_change = 0.006*mouse_diffX;
+        cangle = cos(angle_change);
+        sangle = sin(angle_change);
+        ax.CameraPosition = ([cangle, sangle, 0; -sangle, cangle 0; 0, 0, 1] * camvec')' + ax.CameraTarget;
         camvec = ax.CameraPosition - ax.CameraTarget;
         sidevec = cross([0,0,1], camvec);
         if mouse_diffY > 0 || dot(camvec, camvec) - camvec(3)^2 > 0.2 % Avoid getting in gimbal lock range.
