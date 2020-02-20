@@ -154,7 +154,7 @@ previous_pos = [0, 0, 0];
         camvec = ax.CameraPosition - ax.CameraTarget;
         sidevec = cross([0,0,1], camvec);
         if mouse_diffY > 0 || dot(camvec, camvec) - camvec(3)^2 > 0.2 % Avoid getting in gimbal lock range.
-            twirl_rot = axang2rotm([sidevec, mouse_diffY * 0.003]);
+            twirl_rot = axangToRotm(sidevec, mouse_diffY * 0.003);
             ax.CameraPosition = (twirl_rot * camvec')' + ax.CameraTarget;
         end
         if ax.CameraPosition(3) < 0.1
@@ -295,4 +295,13 @@ previous_pos = [0, 0, 0];
     end
     end
 
+    function rotm = axangToRotm(ax, ang)
+    % AXANGTOROTM Converts an axis-angle parameterized rotation to a
+    % rotation matix. Eliminates the one dependency on the robotics
+    % toolbox.
+    
+       cang = cos(ang);
+       skewmat = [0, -ax(3), ax(2); ax(3), 0, -ax(1); -ax(2), ax(1), 0];
+       rotm = cang * eye(3) + sin(ang) * skewmat + (1 - cang) * kron(ang, ang');
+    end
 end
