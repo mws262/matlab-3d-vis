@@ -40,6 +40,8 @@ sky = surf(200*skyX,200*skyY,200*skyZ,'LineStyle','none','FaceColor','interp');
 sky.AmbientStrength = 0.8;
 colormap(skymap);
 
+makeCoordinateFrame();
+
 axis([-3, 3, -3, 3]);
 daspect([1,1,1]);
 ax = scene_fig.Children;
@@ -64,244 +66,254 @@ shift_down = false;
 previous_pos = [0, 0, 0];
 
     function mouse_down_callback(src,dat)
-    % MOUSE_DOWN_CALLBACK Function which gets called automatically when
-    % assigned as a callback for the visualizer. Triggered on mouse buttons
-    % being pressed. Starts listening for dragging motion by assigning
-    % MOUSE_MOTION_CALLBACK as a mouse motion callback.
-    %
-    %   MOUSE_DOWN_CALLBACK(src, dat)
-    %
-    %   Inputs:
-    %       `src` -- Which graphics object triggered this callback.
-    %       `dat` -- Data structure with information about the mouse event.
-    %
-    %   Outputs: <none>
-    %
-    %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
-    %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
-    %
-
-    if strcmp(dat.EventName, 'WindowMousePress')
-        previous_pos = src.CurrentPoint;
-        src.WindowButtonMotionFcn = @mouse_motion_callback;
-    end
+        % MOUSE_DOWN_CALLBACK Function which gets called automatically when
+        % assigned as a callback for the visualizer. Triggered on mouse buttons
+        % being pressed. Starts listening for dragging motion by assigning
+        % MOUSE_MOTION_CALLBACK as a mouse motion callback.
+        %
+        %   MOUSE_DOWN_CALLBACK(src, dat)
+        %
+        %   Inputs:
+        %       `src` -- Which graphics object triggered this callback.
+        %       `dat` -- Data structure with information about the mouse event.
+        %
+        %   Outputs: <none>
+        %
+        %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
+        %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
+        %
+        
+        if strcmp(dat.EventName, 'WindowMousePress')
+            previous_pos = src.CurrentPoint;
+            src.WindowButtonMotionFcn = @mouse_motion_callback;
+        end
     end
 
     function mouse_up_callback(src,dat)
-    % MOUSE_UP_CALLBACK Function which gets called automatically when
-    % assigned as a callback for the visualizer. Triggered on mouse buttons
-    % being released. This terminates any dragging interactions which might be
-    % occuring by unassigning the WindowButtonMotionFcn.
-    %
-    %   MOUSE_UP_CALLBACK(src, dat)
-    %
-    %   Inputs:
-    %       `src` -- Which graphics object triggered this callback.
-    %       `dat` -- Data structure with information about the mouse event.
-    %
-    %   Outputs: <none>
-    %
-    %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
-    %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
-    %
-
-    if strcmp(dat.EventName, 'WindowMouseRelease')
-        src.WindowButtonMotionFcn = '';
-    end
+        % MOUSE_UP_CALLBACK Function which gets called automatically when
+        % assigned as a callback for the visualizer. Triggered on mouse buttons
+        % being released. This terminates any dragging interactions which might be
+        % occuring by unassigning the WindowButtonMotionFcn.
+        %
+        %   MOUSE_UP_CALLBACK(src, dat)
+        %
+        %   Inputs:
+        %       `src` -- Which graphics object triggered this callback.
+        %       `dat` -- Data structure with information about the mouse event.
+        %
+        %   Outputs: <none>
+        %
+        %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
+        %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
+        %
+        
+        if strcmp(dat.EventName, 'WindowMouseRelease')
+            src.WindowButtonMotionFcn = '';
+        end
     end
 
     function mouse_motion_callback(src, dat)
-    % MOUSE_MOTION_CALLBACK Function which gets called automatically when
-    % assigned as a callback for the visualizer. Triggered on mouse motion.
-    % This callback is turned off when mouse buttons are not pressed. When
-    % mouse is dragged, orbits camera around the camera target. If shift is
-    % pressed, translates both camera and camera target relative to the plane
-    % of the ground.
-    %
-    %   MOUSE_MOTION_CALLBACK(src, dat)
-    %
-    %   Inputs:
-    %       `src` -- Which graphics object triggered this callback.
-    %       `dat` -- Data structure with information about the mouse event.
-    %
-    %   Outputs: <none>
-    %
-    %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
-    %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
-    %
-
-    if isempty(previous_pos)
-        previous_pos = src.CurrentPoint;
-    end
-    current_pos = src.CurrentPoint; % Capture current mouse position in screen coords.
-    mouse_diff = current_pos - previous_pos;
-    mouse_diffX = mouse_diff(1);
-    mouse_diffY = mouse_diff(2);
-    camvec = ax.CameraPosition - ax.CameraTarget;
-    if shift_down
-        forwardvec = camvec .* [1,1,0];
-        forwardvec = forwardvec / norm(forwardvec);
-        rightvec = cross(camvec, [0, 0, 1]);
-        forwarddiff = 0.003 * mouse_diffY * forwardvec;
-        rightdiff = 0.001 * mouse_diffX * rightvec;
-        ax.CameraTarget = ax.CameraTarget + forwarddiff + rightdiff;
-        ax.CameraPosition = ax.CameraPosition + forwarddiff + rightdiff;
-    else
-        angle_change = 0.006*mouse_diffX;
-        cangle = cos(angle_change);
-        sangle = sin(angle_change);
-        ax.CameraPosition = ([cangle, sangle, 0; -sangle, cangle 0; 0, 0, 1] * camvec')' + ax.CameraTarget;
+        % MOUSE_MOTION_CALLBACK Function which gets called automatically when
+        % assigned as a callback for the visualizer. Triggered on mouse motion.
+        % This callback is turned off when mouse buttons are not pressed. When
+        % mouse is dragged, orbits camera around the camera target. If shift is
+        % pressed, translates both camera and camera target relative to the plane
+        % of the ground.
+        %
+        %   MOUSE_MOTION_CALLBACK(src, dat)
+        %
+        %   Inputs:
+        %       `src` -- Which graphics object triggered this callback.
+        %       `dat` -- Data structure with information about the mouse event.
+        %
+        %   Outputs: <none>
+        %
+        %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
+        %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
+        %
+        
+        if isempty(previous_pos)
+            previous_pos = src.CurrentPoint;
+        end
+        current_pos = src.CurrentPoint; % Capture current mouse position in screen coords.
+        mouse_diff = current_pos - previous_pos;
+        mouse_diffX = mouse_diff(1);
+        mouse_diffY = mouse_diff(2);
         camvec = ax.CameraPosition - ax.CameraTarget;
-        sidevec = cross([0,0,1], camvec);
-        if mouse_diffY > 0 || dot(camvec, camvec) - camvec(3)^2 > 0.2 % Avoid getting in gimbal lock range.
-            twirl_rot = axangToRotm(sidevec, mouse_diffY * 0.003);
-            ax.CameraPosition = (twirl_rot * camvec')' + ax.CameraTarget;
+        if shift_down
+            forwardvec = camvec .* [1,1,0];
+            forwardvec = forwardvec / norm(forwardvec);
+            rightvec = cross(camvec, [0, 0, 1]);
+            forwarddiff = 0.003 * mouse_diffY * forwardvec;
+            rightdiff = 0.001 * mouse_diffX * rightvec;
+            ax.CameraTarget = ax.CameraTarget + forwarddiff + rightdiff;
+            ax.CameraPosition = ax.CameraPosition + forwarddiff + rightdiff;
+        else
+            angle_change = 0.006*mouse_diffX;
+            cangle = cos(angle_change);
+            sangle = sin(angle_change);
+            ax.CameraPosition = ([cangle, sangle, 0; -sangle, cangle 0; 0, 0, 1] * camvec')' + ax.CameraTarget;
+            camvec = ax.CameraPosition - ax.CameraTarget;
+            sidevec = cross([0,0,1], camvec);
+            if mouse_diffY > 0 || dot(camvec, camvec) - camvec(3)^2 > 0.2 % Avoid getting in gimbal lock range.
+                twirl_rot = axangToRotm(sidevec, mouse_diffY * 0.003);
+                ax.CameraPosition = (twirl_rot * camvec')' + ax.CameraTarget;
+            end
+            if ax.CameraPosition(3) < 0.1
+                ax.CameraPosition(3) = 0.1;
+            end
         end
-        if ax.CameraPosition(3) < 0.1
-            ax.CameraPosition(3) = 0.1;
-        end
-    end
-    previous_pos = current_pos;
+        previous_pos = current_pos;
     end
 
     function mousewheel_callback( src, dat )
-    % MOUSEWHEEL_CALLBACK Function which gets called automatically when
-    % assigned as a callback for the visualizer. Triggered on mouse scroll
-    % wheel. Handles zooming in/out in the direction of the camera target along
-    % the line between the camera and the camera target.
-    %
-    %   MOUSEWHEEL_CALLBACK(src, dat)
-    %
-    %   Inputs:
-    %       `src` -- Which graphics object triggered this callback.
-    %       `dat` -- Data structure with information about the mouse wheel
-    %       event.
-    %
-    %   Outputs: <none>
-    %
-    %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
-    %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
-    %
-
-    delta = 0.25; % Multiplier for zooming. Hand-tuned.
-
-    curr_cam_pos = ax.CameraPosition;
-    curr_cam_tar = ax.CameraTarget;
-
-    cam_vec = curr_cam_tar - curr_cam_pos;
-
-    if dat.VerticalScrollCount > 0 % Zoom out
-        ax.CameraPosition = curr_cam_pos - cam_vec/norm(cam_vec)*delta;
-    elseif dat.VerticalScrollCount < 0 && dot(cam_vec, cam_vec) > 1 % Zoom in, but only if we aren't too close to the target.
-        ax.CameraPosition = curr_cam_pos + cam_vec/norm(cam_vec)*delta;
-    end
+        % MOUSEWHEEL_CALLBACK Function which gets called automatically when
+        % assigned as a callback for the visualizer. Triggered on mouse scroll
+        % wheel. Handles zooming in/out in the direction of the camera target along
+        % the line between the camera and the camera target.
+        %
+        %   MOUSEWHEEL_CALLBACK(src, dat)
+        %
+        %   Inputs:
+        %       `src` -- Which graphics object triggered this callback.
+        %       `dat` -- Data structure with information about the mouse wheel
+        %       event.
+        %
+        %   Outputs: <none>
+        %
+        %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
+        %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
+        %
+        
+        delta = 0.25; % Multiplier for zooming. Hand-tuned.
+        
+        curr_cam_pos = ax.CameraPosition;
+        curr_cam_tar = ax.CameraTarget;
+        
+        cam_vec = curr_cam_tar - curr_cam_pos;
+        
+        if dat.VerticalScrollCount > 0 % Zoom out
+            ax.CameraPosition = curr_cam_pos - cam_vec/norm(cam_vec)*delta;
+        elseif dat.VerticalScrollCount < 0 && dot(cam_vec, cam_vec) > 1 % Zoom in, but only if we aren't too close to the target.
+            ax.CameraPosition = curr_cam_pos + cam_vec/norm(cam_vec)*delta;
+        end
     end
 
     function key_press_callback( src, dat )
-    % KEY_PRESS_CALLBACK Function which gets called automatically when
-    % assigned as a callback for the visualizer. Triggered on a keyboard key
-    % being pressed down. Handles doing camera orbits if shift is not pressed.
-    % Arrow keys trigger the motion. Does camera and camera target shifting
-    % (panning) if shift is pressed. Works closely with key_release_callback.
-    %
-    %   KEY_PRESS_CALLBACK(src, dat)
-    %
-    %   Inputs:
-    %       `src` -- Which graphics object triggered this callback.
-    %       `dat` -- Data structure with information about the keyboard event.
-    %
-    %   Outputs: <none>
-    %
-    %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
-    %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
-    %
-
-    turn_delta = 0.25; % Multiplier for tilting.
-    trans_delta = 0.1; % Multiplier for panning.
-
-    curr_cam_pos = ax.CameraPosition;
-    curr_cam_tar = ax.CameraTarget;
-    cam_vec = curr_cam_tar - curr_cam_pos;
-    cam_up = cross(cross(cam_vec, [0, 0, 1]), cam_vec);
-
-    shift_down = ~isempty(dat.Modifier) && strcmp(dat.Modifier{1}, 'shift');
-    switch dat.Key
-        case 'uparrow'
-            if shift_down % Pan forwards.
-                forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
-                forward_vec = forward_vec/norm(forward_vec);
-                ax.CameraPosition = curr_cam_pos + trans_delta * forward_vec;
-                ax.CameraTarget = curr_cam_tar + trans_delta * forward_vec;
-            else % Tilt upwards.
-                ax.CameraPosition = curr_cam_pos + cam_up/(norm(cam_up) + eps) * turn_delta;
-            end
-        case 'downarrow'
-            if shift_down % Pan backwards.
-                forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
-                forward_vec = forward_vec/norm(forward_vec);
-                ax.CameraPosition = curr_cam_pos - trans_delta * forward_vec;
-                ax.CameraTarget = curr_cam_tar - trans_delta * forward_vec;
-            else % Tilt downwards.
-                if curr_cam_pos(3) > 0.2 % No ground-penetrating cameras
-                    ax.CameraPosition = curr_cam_pos - cam_up/(norm(cam_up) + eps) * turn_delta;
+        % KEY_PRESS_CALLBACK Function which gets called automatically when
+        % assigned as a callback for the visualizer. Triggered on a keyboard key
+        % being pressed down. Handles doing camera orbits if shift is not pressed.
+        % Arrow keys trigger the motion. Does camera and camera target shifting
+        % (panning) if shift is pressed. Works closely with key_release_callback.
+        %
+        %   KEY_PRESS_CALLBACK(src, dat)
+        %
+        %   Inputs:
+        %       `src` -- Which graphics object triggered this callback.
+        %       `dat` -- Data structure with information about the keyboard event.
+        %
+        %   Outputs: <none>
+        %
+        %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
+        %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
+        %
+        
+        turn_delta = 0.25; % Multiplier for tilting.
+        trans_delta = 0.1; % Multiplier for panning.
+        
+        curr_cam_pos = ax.CameraPosition;
+        curr_cam_tar = ax.CameraTarget;
+        cam_vec = curr_cam_tar - curr_cam_pos;
+        cam_up = cross(cross(cam_vec, [0, 0, 1]), cam_vec);
+        
+        shift_down = ~isempty(dat.Modifier) && strcmp(dat.Modifier{1}, 'shift');
+        switch dat.Key
+            case 'uparrow'
+                if shift_down % Pan forwards.
+                    forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
+                    forward_vec = forward_vec/norm(forward_vec);
+                    ax.CameraPosition = curr_cam_pos + trans_delta * forward_vec;
+                    ax.CameraTarget = curr_cam_tar + trans_delta * forward_vec;
+                else % Tilt upwards.
+                    ax.CameraPosition = curr_cam_pos + cam_up/(norm(cam_up) + eps) * turn_delta;
                 end
-            end
-        case 'rightarrow'
-            if shift_down % Pan right.
-                forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
-                forward_vec = forward_vec/norm(forward_vec);
-                right_vec = cross(forward_vec, [0, 0, 1]);
-                ax.CameraPosition = curr_cam_pos + trans_delta * right_vec;
-                ax.CameraTarget = curr_cam_tar + trans_delta * right_vec;
-            else % Tilt right.
-                cam_r = cross(cam_vec, cam_up);
-                ax.CameraPosition = curr_cam_pos + cam_r/(norm(cam_r) + eps) * turn_delta;
-            end
-        case 'leftarrow'
-            if shift_down % Pan left.
-                forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
-                forward_vec = forward_vec/norm(forward_vec);
-                right_vec = cross(forward_vec, [0, 0, 1]);
-                ax.CameraPosition = curr_cam_pos - trans_delta * right_vec;
-                ax.CameraTarget = curr_cam_tar - trans_delta * right_vec;
-            else % Tilt left.
-                cam_r = cross(cam_vec, cam_up);
-                ax.CameraPosition = curr_cam_pos - cam_r/(norm(cam_r) + eps) * turn_delta;
-            end
-        otherwise
-            % Other events maybe added in the future.
-    end
+            case 'downarrow'
+                if shift_down % Pan backwards.
+                    forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
+                    forward_vec = forward_vec/norm(forward_vec);
+                    ax.CameraPosition = curr_cam_pos - trans_delta * forward_vec;
+                    ax.CameraTarget = curr_cam_tar - trans_delta * forward_vec;
+                else % Tilt downwards.
+                    if curr_cam_pos(3) > 0.2 % No ground-penetrating cameras
+                        ax.CameraPosition = curr_cam_pos - cam_up/(norm(cam_up) + eps) * turn_delta;
+                    end
+                end
+            case 'rightarrow'
+                if shift_down % Pan right.
+                    forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
+                    forward_vec = forward_vec/norm(forward_vec);
+                    right_vec = cross(forward_vec, [0, 0, 1]);
+                    ax.CameraPosition = curr_cam_pos + trans_delta * right_vec;
+                    ax.CameraTarget = curr_cam_tar + trans_delta * right_vec;
+                else % Tilt right.
+                    cam_r = cross(cam_vec, cam_up);
+                    ax.CameraPosition = curr_cam_pos + cam_r/(norm(cam_r) + eps) * turn_delta;
+                end
+            case 'leftarrow'
+                if shift_down % Pan left.
+                    forward_vec = (curr_cam_tar - curr_cam_pos) .* [1 1 0];
+                    forward_vec = forward_vec/norm(forward_vec);
+                    right_vec = cross(forward_vec, [0, 0, 1]);
+                    ax.CameraPosition = curr_cam_pos - trans_delta * right_vec;
+                    ax.CameraTarget = curr_cam_tar - trans_delta * right_vec;
+                else % Tilt left.
+                    cam_r = cross(cam_vec, cam_up);
+                    ax.CameraPosition = curr_cam_pos - cam_r/(norm(cam_r) + eps) * turn_delta;
+                end
+            otherwise
+                % Other events maybe added in the future.
+        end
     end
 
     function key_release_callback(src,dat)
-    % KEY_RELEASE_CALLBACK Function which gets called automatically when
-    % assigned as a callback for the visualizer. Triggered on a keyboard key
-    % being released. Currently only listens for modifier keys being released.
-    %
-    %   KEY_RELEASE_CALLBACK(src, dat)
-    %
-    %   Inputs:
-    %       `src` -- Which graphics object triggered this callback.
-    %       `dat` -- Data structure with information about the keyboard event.
-    %
-    %   Outputs: <none>
-    %
-    %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
-    %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
-    %
-
-    if strcmp(dat.Key, 'shift')
-        shift_down = false;
-    end
+        % KEY_RELEASE_CALLBACK Function which gets called automatically when
+        % assigned as a callback for the visualizer. Triggered on a keyboard key
+        % being released. Currently only listens for modifier keys being released.
+        %
+        %   KEY_RELEASE_CALLBACK(src, dat)
+        %
+        %   Inputs:
+        %       `src` -- Which graphics object triggered this callback.
+        %       `dat` -- Data structure with information about the keyboard event.
+        %
+        %   Outputs: <none>
+        %
+        %   See also MOUSE_MOTION_CALLBACK, MOUSE_UP_CALLBACK, MOUSE_DOWN_CALLBACK,
+        %   KEY_CALLBACK, KEY_RELEASE_CALLBACK, PATCHFACEFCN, MAKE_VISUALIZER_SCENE.
+        %
+        
+        if strcmp(dat.Key, 'shift')
+            shift_down = false;
+        end
     end
 
     function rotm = axangToRotm(ax, ang)
-    % AXANGTOROTM Converts an axis-angle parameterized rotation to a
-    % rotation matix. Eliminates the one dependency on the robotics
-    % toolbox.
-    
-       cang = cos(ang);
-       skewmat = [0, -ax(3), ax(2); ax(3), 0, -ax(1); -ax(2), ax(1), 0];
-       rotm = cang * eye(3) + sin(ang) * skewmat + (1 - cang) * kron(ang, ang');
+        % AXANGTOROTM Converts an axis-angle parameterized rotation to a
+        % rotation matix. Eliminates the one dependency on the robotics
+        % toolbox.
+        
+        cang = cos(ang);
+        skewmat = [0, -ax(3), ax(2); ax(3), 0, -ax(1); -ax(2), ax(1), 0];
+        rotm = cang * eye(3) + sin(ang) * skewmat + (1 - cang) * kron(ang, ang');
+    end
+
+    function makeCoordinateFrame()
+        plot3(0, 0, 0, '.b', 'MarkerSize', 25);
+        quiver3(0, 0, 0, 0.2, 0, 0, 'LineWidth', 4, 'Color', 'r');
+        quiver3(0, 0, 0, 0, 0.2, 0, 'LineWidth', 4, 'Color', 'g');
+        quiver3(0, 0, 0, 0, 0, 0.2, 'LineWidth', 4, 'Color', 'b');
+        text(0.22, 0, 0, 'x', 'FontSize', 16, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+        text(0, 0.22, 0, 'y', 'FontSize', 16, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+        text(0, 0, 0.22, 'z', 'FontSize', 16, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
     end
 end
