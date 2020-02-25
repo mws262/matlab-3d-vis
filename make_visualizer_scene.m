@@ -15,12 +15,24 @@ function scene_fig = make_visualizer_scene()
 %
 
 scene_fig = figure(1);
+scene_fig.Visible = false;
 scene_fig.NumberTitle = 'off';
 scene_fig.Name = 'Matt''s Visualizer';
 scene_fig.ToolBar = 'none';
 scene_fig.MenuBar = 'none';
 colormap(winter);
 hold on;
+
+axis([-3, 3, -3, 3]);
+daspect([1,1,1]);
+ax = scene_fig.Children;
+
+ax.Projection = 'perspective';
+ax.Clipping = 'off';
+ax.Visible = 'off';
+scene_fig.Position = [0, 0, 1500, 975];
+ax.CameraPosition = [-2.4, -1.6, 1.8];
+ax.CameraTarget = [0, 0, 0];
 
 % Floor plane representing surface that the ball is rolling on.
 [floor_x, floor_y] = meshgrid(-10:0.5:10); % Generate x and y data
@@ -41,17 +53,6 @@ sky.AmbientStrength = 0.8;
 colormap(skymap);
 
 makeCoordinateFrame();
-
-axis([-3, 3, -3, 3]);
-daspect([1,1,1]);
-ax = scene_fig.Children;
-
-ax.Projection = 'perspective';
-ax.Clipping = 'off';
-ax.Visible = 'off';
-scene_fig.Position = [0, 0, 1500, 975];
-ax.CameraPosition = [-2.4, -1.6, 1.8];
-ax.CameraTarget = [0, 0, 0];
 scene_fig.WindowKeyPressFcn = @key_press_callback;
 scene_fig.WindowKeyReleaseFcn = @key_release_callback;
 scene_fig.WindowScrollWheelFcn = @mousewheel_callback;
@@ -64,6 +65,8 @@ light1.Style = 'infinite';
 
 shift_down = false;
 previous_pos = [0, 0, 0];
+
+scene_fig.Visible = true;
 
     function mouse_down_callback(src,dat)
         % MOUSE_DOWN_CALLBACK Function which gets called automatically when
