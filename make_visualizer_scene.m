@@ -152,15 +152,14 @@ scene_fig.Visible = true;
             ax.CameraTarget = ax.CameraTarget + forwarddiff + rightdiff;
             ax.CameraPosition = ax.CameraPosition + forwarddiff + rightdiff;
         else
-            angle_change = 0.006*mouse_diffX;
-            cangle = cos(angle_change);
-            sangle = sin(angle_change);
-            ax.CameraPosition = ([cangle, sangle, 0; -sangle, cangle 0; 0, 0, 1] * camvec')' + ax.CameraTarget;
-            camvec = ax.CameraPosition - ax.CameraTarget;
-            sidevec = cross([0,0,1], camvec);
-            if mouse_diffY > 0 || dot(camvec, camvec) - camvec(3)^2 > 0.2 % Avoid getting in gimbal lock range.
-                twirl_rot = axangToRotm(sidevec, mouse_diffY * 0.003);
-                ax.CameraPosition = (twirl_rot * camvec')' + ax.CameraTarget;
+            rotvec = cross([0, 0, 1], camvec / norm(camvec)) * mouse_diffY  + [0, 0, -mouse_diffX];
+            rotvec = rotvec / norm(rotvec);
+            ang = sqrt((mouse_diffY * 0.003) ^ 2 + (0.006 * mouse_diffX) ^ 2);
+            
+            camvec = cos(ang) * camvec + sin(ang) * cross(rotvec, camvec) + (1 - cos(ang)) * dot(rotvec, camvec) * rotvec;
+
+            if dot(camvec, camvec) - camvec(3)^2 > 0.2 % Avoid getting in gimbal lock range.
+                ax.CameraPosition = camvec + ax.CameraTarget;
             end
             if ax.CameraPosition(3) < 0.1
                 ax.CameraPosition(3) = 0.1;
@@ -300,15 +299,19 @@ scene_fig.Visible = true;
         end
     end
 
-    function rotm = axangToRotm(ax, ang)
-        % AXANGTOROTM Converts an axis-angle parameterized rotation to a
-        % rotation matix. Eliminates the one dependency on the robotics
-        % toolbox.
-        
-        cang = cos(ang);
-        skewmat = [0, -ax(3), ax(2); ax(3), 0, -ax(1); -ax(2), ax(1), 0];
-        rotm = cang * eye(3) + sin(ang) * skewmat + (1 - cang) * kron(ang, ang');
-    end
+%     function rotm = axangToRotm(ax, ang)
+%         % AXANGTOROTM Converts an axis-angle parameterized rotation to a
+%         % rotation matix. Eliminates the one dependency on the robotics
+%         % toolbox.
+%         
+%         cang = cos(ang);
+%         skewmat = [0, -ax(3), ax(2); ax(3), 0, -ax(1); -ax(2), ax(1), 0];
+%         rotm = cang * eye(3) + sin(ang) * skewmat + (1 - cang) * kron(ang, ang');
+%         norm(rotm)
+%         rotm = rotm / norm(rotm);
+% %         [u s vt] = svd(rotm);
+% %         rotm = u * vt';
+%     end
 
     function makeCoordinateFrame()
         plot3(0, 0, 0, '.b', 'MarkerSize', 25);
