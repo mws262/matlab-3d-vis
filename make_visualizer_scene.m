@@ -45,10 +45,11 @@ floor_patch.SpecularStrength = 0.2;
 floor_patch.DiffuseStrength = 0.9;
 
 % Sky sphere. From my MatlabPlaneGraphics example set.
-skymap = [linspace(1,0.8,10)',linspace(1,0.8,10)',linspace(1,0.95,10)'];
+skymap = [linspace(1,0.8,200)',linspace(1,0.85,200)',linspace(1,0.95,200)'];
 
-[skyX,skyY,skyZ] = sphere(100);
-sky = surf(200*skyX,200*skyY,200*skyZ,'LineStyle','none','FaceColor','interp');
+[skyX,skyY,skyZ] = sphere(4);
+sky = surf(50*skyX,50*skyY,50*skyZ,'LineStyle','none','FaceColor','interp');
+sky.FaceLighting = 'gouraud';
 sky.AmbientStrength = 0.8;
 colormap(skymap);
 
@@ -60,14 +61,20 @@ scene_fig.WindowButtonDownFcn = @mouse_down_callback;
 scene_fig.WindowButtonUpFcn = @mouse_up_callback;
 camva(40);
 light1 = light();
-light1.Position = [10,10,40];
+light1.Position = [0,0,20];
 light1.Style = 'infinite';
+% light1.Color = [0.1, 0.1, 0.1];
+
+
+% light2 = light();
+% light2.Position = [10,-10,5];
+% light2.Style = 'local';
+% light2.Color = [0.1, 0.1, 0.1];
 
 shift_down = false;
 previous_pos = [0, 0, 0];
 
 scene_fig.Visible = true;
-
     function mouse_down_callback(src,dat)
         % MOUSE_DOWN_CALLBACK Function which gets called automatically when
         % assigned as a callback for the visualizer. Triggered on mouse buttons
