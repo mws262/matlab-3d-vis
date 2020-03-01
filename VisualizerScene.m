@@ -84,7 +84,7 @@ classdef VisualizerScene < handle
         end
     end
     
-    methods(Access = private)
+    methods(Access = protected)
         function mouse_down_callback(obj, src, dat)
             % MOUSE_DOWN_CALLBACK Function which gets called automatically when
             % assigned as a callback for the visualizer. Triggered on mouse buttons
