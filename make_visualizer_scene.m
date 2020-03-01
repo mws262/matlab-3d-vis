@@ -20,7 +20,6 @@ scene_fig.NumberTitle = 'off';
 scene_fig.Name = 'Matt''s Visualizer';
 scene_fig.ToolBar = 'none';
 scene_fig.MenuBar = 'none';
-colormap(winter);
 hold on;
 
 axis([-3, 3, -3, 3]);
@@ -63,16 +62,9 @@ camva(40);
 light1 = light();
 light1.Position = [0,0,20];
 light1.Style = 'infinite';
-% light1.Color = [0.1, 0.1, 0.1];
-
-
-% light2 = light();
-% light2.Position = [10,-10,5];
-% light2.Style = 'local';
-% light2.Color = [0.1, 0.1, 0.1];
 
 shift_down = false;
-previous_pos = [0, 0, 0];
+previous_pos = [];
 
 scene_fig.Visible = true;
     function mouse_down_callback(src,dat)
