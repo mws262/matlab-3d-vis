@@ -1,26 +1,33 @@
 classdef VisualizerScene < handle
     %VISUALIZERSCENE Class version of make_visualizer_scene function.
+    %   Better for expanding the functionality of the basic graphics world
+    %   by subclassing this.
     
     properties
-        Figure
-        Axis
+        Figure % Figure object containing the axes, callbacks, etc.
+        Axis % Axis on which the 3D world is drawn. There will not be visible x, y, z axes, but all the plots go on here.
     end
     
     properties(Access = private)
-        mouse_pos_prev;
-        mouse_pos_curr
-        shift_key_down = false
+        mouse_pos_prev; % Previously-seen mouse position for determining changes in mouse drag.
+        mouse_pos_curr % Most-recently-seen mouse position.
+        shift_key_down = false % Track whether this modifier key is pressed.
     end
     
     methods
         function obj = VisualizerScene(fig_number)
+            % Create a new scene in a new figure. If the figure number is
+            % specified (optional), it will be created with that ID.
             if nargin == 0
                 obj.Figure = figure();
             else
                 obj.Figure = figure(fig_number);
             end
             
-            obj.Figure.Visible = false;
+            obj.Figure.Visible = false; % Turn off the figure while the world is being constructed. Re-enable afterwards.
+            
+            % Kill most of the default figure UI components to make it look
+            % less like a MATLAB plot and more like a game visualizer.
             obj.Figure.NumberTitle = 'off';
             obj.Figure.Name = 'Matt''s Visualizer';
             obj.Figure.ToolBar = 'none';
@@ -31,6 +38,7 @@ classdef VisualizerScene < handle
             daspect([1,1,1]);
             obj.Axis = obj.Figure.Children;
             
+            % Set starting camera settings.
             obj.Axis.Projection = 'perspective';
             obj.Axis.Clipping = 'off';
             obj.Axis.Visible = 'off';
@@ -57,13 +65,17 @@ classdef VisualizerScene < handle
             sky.AmbientStrength = 0.8;
             colormap(skymap);
             
-            VisualizerScene.makeCoordinateFrame();
+            VisualizerScene.makeCoordinateFrame(); % Make the x, y, z arrows graphically.
+            
+            % Set keyboard and mouse callbacks.
             obj.Figure.WindowKeyPressFcn = @(src, dat)key_press_callback(obj, src, dat);
             obj.Figure.WindowKeyReleaseFcn = @(src, dat)key_release_callback(obj, src, dat);
             obj.Figure.WindowScrollWheelFcn = @(src, dat)mousewheel_callback(obj, src, dat);
             obj.Figure.WindowButtonDownFcn = @(src, dat)mouse_down_callback(obj, src, dat);
             obj.Figure.WindowButtonUpFcn = @(src, dat)mouse_up_callback(obj, src, dat);
             camva(40);
+            
+            % Add lighting to the scene.
             light1 = light();
             light1.Position = [0,0,20];
             light1.Style = 'infinite';
@@ -74,6 +86,8 @@ classdef VisualizerScene < handle
     
     methods(Static)
         function makeCoordinateFrame()
+            % Make the xyz coordinate frame with arrows pointing in those
+            % directions.
             plot3(0, 0, 0, '.b', 'MarkerSize', 25);
             quiver3(0, 0, 0, 0.2, 0, 0, 'LineWidth', 4, 'Color', 'r');
             quiver3(0, 0, 0, 0, 0.2, 0, 'LineWidth', 4, 'Color', 'g');
@@ -132,7 +146,7 @@ classdef VisualizerScene < handle
             end
         end
         
-        function mouse_motion_callback(obj, src, dat)
+        function mouse_motion_callback(obj, src, ~)
             % MOUSE_MOTION_CALLBACK Function which gets called automatically when
             % assigned as a callback for the visualizer. Triggered on mouse motion.
             % This callback is turned off when mouse buttons are not pressed. When
@@ -185,7 +199,7 @@ classdef VisualizerScene < handle
             obj.mouse_pos_prev = obj.mouse_pos_curr;
         end
         
-        function mousewheel_callback(obj, src, dat)
+        function mousewheel_callback(obj, ~, dat)
             % MOUSEWHEEL_CALLBACK Function which gets called automatically when
             % assigned as a callback for the visualizer. Triggered on mouse scroll
             % wheel. Handles zooming in/out in the direction of the camera target along
@@ -218,7 +232,7 @@ classdef VisualizerScene < handle
             end
         end
         
-        function key_press_callback(obj, src, dat)
+        function key_press_callback(obj, ~, dat)
             % KEY_PRESS_CALLBACK Function which gets called automatically when
             % assigned as a callback for the visualizer. Triggered on a keyboard key
             % being pressed down. Handles doing camera orbits if shift is not pressed.
@@ -294,7 +308,7 @@ classdef VisualizerScene < handle
             end
         end
         
-        function key_release_callback(obj, src, dat)
+        function key_release_callback(obj, ~, dat)
             % KEY_RELEASE_CALLBACK Function which gets called automatically when
             % assigned as a callback for the visualizer. Triggered on a keyboard key
             % being released. Currently only listens for modifier keys being released.
