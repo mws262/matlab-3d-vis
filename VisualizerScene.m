@@ -6,6 +6,9 @@ classdef VisualizerScene < handle
     properties
         Figure % Figure object containing the axes, callbacks, etc.
         Axis % Axis on which the 3D world is drawn. There will not be visible x, y, z axes, but all the plots go on here.
+        extra_key_press_callback = @(src, dat)(NaN); % Allows extra key actions to be added by some user of this visualizer. 
+                                                     % NOTE: Arrow keys are reserved for the camera, and this callback will not be triggered for them.
+        extra_key_release_callback = @(src, dat)(NaN);
     end
     
     properties(Access = private)
@@ -47,7 +50,7 @@ classdef VisualizerScene < handle
             obj.Axis.CameraTarget = [0, 0, 0];
             
             % Floor plane representing surface that the ball is rolling on.
-            [floor_x, floor_y] = meshgrid(-10:0.5:10); % Generate x and y data
+            [floor_x, floor_y] = meshgrid(-20:0.5:20); % Generate x and y data
             [floor_z] = zeros(size(floor_x, 1)); % Generate z data
             floor_patch = patch(surf2patch(floor_x, floor_y, floor_z));
             floor_patch.FaceColor = [0.8,0.8,0.6];
@@ -247,7 +250,7 @@ classdef VisualizerScene < handle
             end
         end
         
-        function key_press_callback(obj, ~, dat)
+        function key_press_callback(obj, src, dat)
             % KEY_PRESS_CALLBACK Function which gets called automatically when
             % assigned as a callback for the visualizer. Triggered on a keyboard key
             % being pressed down. Handles doing camera orbits if shift is not pressed.
@@ -320,6 +323,7 @@ classdef VisualizerScene < handle
                         end
                     otherwise
                         % Other events maybe added in the future.
+                        obj.extra_key_press_callback(src, dat);
                 end
             catch ME % If the window gets closed, I'd rather the animation loop exit without error messages.
                 if ~strcmp(ME.identifier, 'MATLAB:class:InvalidHandle')
@@ -328,7 +332,7 @@ classdef VisualizerScene < handle
             end
         end
         
-        function key_release_callback(obj, ~, dat)
+        function key_release_callback(obj, src, dat)
             % KEY_RELEASE_CALLBACK Function which gets called automatically when
             % assigned as a callback for the visualizer. Triggered on a keyboard key
             % being released. Currently only listens for modifier keys being released.
@@ -348,6 +352,8 @@ classdef VisualizerScene < handle
             if strcmp(dat.Key, 'shift')
                 obj.shift_key_down = false;
             end
+            obj.extra_key_release_callback(src, dat);
+
         end
     end
 end
